@@ -140,7 +140,7 @@ while ($file = readdir($dir_handle)) {
 					echo "Inserted game data<br/>";
 				}
 				else{
-					echo "GAME DATA NOT INSERTED<br/>";
+					echo "<font size=\"48\"><strong>GAME DATA NOT INSERTED</strong></font><br/>";
 				}
 		
 				//get the game id just inserted
@@ -153,14 +153,14 @@ while ($file = readdir($dir_handle)) {
 				$teamId = intval($returnData['T_id']);
 
 				$home = 1;
-				$homeGoals = $data[$teamGameAttrib['Full Time Home Goals']];
-				$homeShots = $data[$teamGameAttrib['Home Shots']];
-				$homeShotsOnTarget = $data[$teamGameAttrib['Home Shots on Target']];
-				$homeCorners = $data[$teamGameAttrib['Home Corners']];
-				$homeYellows = $data[$teamGameAttrib['Home Yellow Cards']];
-				$homeReds = $data[$teamGameAttrib['Home Red Cards']];
-				$homeFouls = $data[$teamGameAttrib['Home Fouls']];
-				$homeHalfGoals = $data[$teamGameAttrib['Home Half Goals']];
+				$homeGoals = ($data[$teamGameAttrib['Full Time Home Goals']] != '') ? $data[$teamGameAttrib['Full Time Home Goals']] : "NULL";
+				$homeShots = ($data[$teamGameAttrib['Home Shots']] != '') ? $data[$teamGameAttrib['Home Shots']] : "NULL";
+				$homeShotsOnTarget = ($data[$teamGameAttrib['Home Shots on Target']] != '') ? $data[$teamGameAttrib['Home Shots on Target']] : "NULL";
+				$homeCorners = ($data[$teamGameAttrib['Home Corners']] != '') ? $data[$teamGameAttrib['Home Corners']] : "NULL";
+				$homeYellows = ($data[$teamGameAttrib['Home Yellow Cards']] != '') ? $data[$teamGameAttrib['Home Yellow Cards']] : "NULL";
+				$homeReds = ($data[$teamGameAttrib['Home Red Cards']] != '') ? $data[$teamGameAttrib['Home Red Cards']] : "NULL";
+				$homeFouls = ($data[$teamGameAttrib['Home Fouls']] != '') ? $data[$teamGameAttrib['Home Fouls']] : "NULL";
+				$homeHalfGoals = ($data[$teamGameAttrib['Home Half Goals']] != '') ? $data[$teamGameAttrib['Home Half Goals']] : "NULL";
 				//woodwork?!?
 				//offsides?!?
 		
@@ -174,6 +174,8 @@ while ($file = readdir($dir_handle)) {
 				}
 				else{
 					echo "TEAMGAME HOME NOT INSERTED<br/>";
+					echo $query . "<br/>";
+					var_dump($homeShots);
 				}
 		
 		
@@ -184,14 +186,14 @@ while ($file = readdir($dir_handle)) {
 				$teamId = intval($returnData['T_id']);
 		
 				$home = 0;
-				$awayGoals = $data[$teamGameAttrib['Full Time Away Goals']];
-				$awayShots = $data[$teamGameAttrib['Away Shots']];
-				$awayShotsOnTarget = $data[$teamGameAttrib['Away Shots on Target']];
-				$awayCorners = $data[$teamGameAttrib['Away Corners']];
-				$awayYellows = $data[$teamGameAttrib['Away Yellow Cards']];
-				$awayReds = $data[$teamGameAttrib['Away Red Cards']];
-				$awayFouls = $data[$teamGameAttrib['Away Fouls']];
-				$awayHalfGoals = $data[$teamGameAttrib['Away Half Goals']];
+				$awayGoals = ($data[$teamGameAttrib['Full Time Away Goals']] != '') ? $data[$teamGameAttrib['Full Time Away Goals']] : "NULL";
+				$awayShots = ($data[$teamGameAttrib['Away Shots']] != '') ? $data[$teamGameAttrib['Away Shots']] : "NULL";
+				$awayShotsOnTarget = ($data[$teamGameAttrib['Away Shots on Target']] != '') ? $data[$teamGameAttrib['Away Shots on Target']] : "NULL";
+				$awayCorners = ($data[$teamGameAttrib['Away Corners']] != '') ? $data[$teamGameAttrib['Away Corners']] : "NULL";
+				$awayYellows = ($data[$teamGameAttrib['Away Yellow Cards']] != '') ? $data[$teamGameAttrib['Away Yellow Cards']] : "NULL";
+				$awayReds = ($data[$teamGameAttrib['Away Red Cards']] != '') ? $data[$teamGameAttrib['Away Red Cards']] : "NULL";
+				$awayFouls = ($data[$teamGameAttrib['Away Fouls']] != '') ? $data[$teamGameAttrib['Away Fouls']] : "NULL";
+				$awayHalfGoals = ($data[$teamGameAttrib['Away Half Goals']] != '') ? $data[$teamGameAttrib['Away Half Goals']] : "NULL";
 				//woodwork?!?
 				//offsides??!?
 		
@@ -205,6 +207,8 @@ while ($file = readdir($dir_handle)) {
 				}
 				else{
 					echo "TEAMGAME AWAY NOT INSERTED<br/>";
+					echo $query . "<br/>";
+					var_dump($awayShots);
 				}
 		
 		
