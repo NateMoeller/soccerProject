@@ -11,8 +11,8 @@ if (mysqli_connect_error()){
 
 
 
-$path = "data/england";
-$leagueId = 1; //change this appropriately
+$path = "data/france";
+$leagueId = 5; //change this appropriately
 $seasonId = 1;
 $id = 0;
 // Open the folder 
@@ -121,16 +121,16 @@ while ($file = readdir($dir_handle)) {
 				}
 				$newDate = $year . "-" . $dateElements[1] . "-" . $dateElements[0];
 				if($data[6] == 'H'){
-					$result = $data[2];
+					$result = mysqli_real_escape_string($con, $data[2]);
 				}
 				else if($data[6] == 'A'){
-					$result = $data[3];
+					$result = mysqli_real_escape_string($con, $data[3]);
 				}
 				else{
 					$result = 'Draw';
 				}
-				$homeTeam = $data[2];
-				$awayTeam = $data[3];
+				$homeTeam = mysqli_real_escape_string($con, $data[2]);
+				$awayTeam = mysqli_real_escape_string($con, $data[3]);
 		
 		
 				//insert game
