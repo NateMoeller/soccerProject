@@ -10,15 +10,25 @@ if (mysqli_connect_error()){
 }
 
 
-$pathToFile = "data/england/2013_14.csv"; //change this appropriately
-$fileHandle = fopen($pathToFile, "r") or die("Unable to open file!");
-$count = 0;
-$id = 0;
 
+$path = "data/england";
 $leagueId = 1; //change this appropriately
-$seasonId = 2; //change this appropriately
-$homeTeam = '';
-$awayTeam = '';
+$seasonId = 1;
+$id = 0;
+// Open the folder 
+$dir_handle = @opendir($path) or die("Unable to open $path");
+$files = scandir($path);
+while ($file = readdir($dir_handle)) {
+	if($file != '.' && $file != '..'){
+		$pathToFile = $path . "/" . $file;
+		$fileHandle = fopen($pathToFile, "r") or die("Unable to open file!");
+		$count = 0;
+
+		
+		$seasonId++;
+	}
+}
+
 
 /*
 while(!feof($fileHandle)) {
@@ -203,8 +213,6 @@ while(!feof($fileHandle)) {
 		}
 		
 		
-		
-		//TODO fix game_id
 		//betting sites
 		$siteId = 1;
 		$hBet365 = round($data[$teamGameAttrib['H Bet365']], 2);
