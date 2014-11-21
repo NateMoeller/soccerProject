@@ -39,7 +39,7 @@ if($result){
 	echo "Season Created Successfully<br/>";
 }
 //insert season data
-$years = ['2014/2015', '2013/2014', '2012/2013', '2011/2012', '2010/2011']; //we can add or change this later
+$years = ['2010/2011', '2011/2012', '2012/2013', '2013/2014', '2014/2015']; //we can add or change this later
 for($i = 1; $i < 6; $i++){
 	for($j = 1; $j < 6; $j++){
 		$query = "INSERT INTO Season (L_id, season_id, year) VALUES ($i, $j, '".$years[$j-1]."');";

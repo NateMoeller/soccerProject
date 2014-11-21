@@ -13,8 +13,21 @@ if (mysqli_connect_error()){
 $leagueId = 1; //change this appropriatly
 $seasonId = 2; //change this appropriately
 
-$pathToFile = "data/england/2013_14.csv"; //change this appropriately
 
+$path = "data/england";
+// Open the folder 
+$dir_handle = @opendir($path) or die("Unable to open $path");
+$files = scandir($path);
+while ($file = readdir($dir_handle)) {
+	if($file != '.' && $file != '..'){
+		$pathToFile = $path . "/" . $file;
+		echo $pathToFile . "<br/>";
+	}
+
+}
+
+/*
+$pathToFile = "data/england/2013_14.csv"; //change this appropriately
 $fileHandle = fopen($pathToFile, "r") or die("Unable to open file!");
 $count = 0;
 
@@ -51,5 +64,5 @@ foreach ($teams as $key => $value) {
 	}
 	$teamId++;
 }
-
+*/
 ?>

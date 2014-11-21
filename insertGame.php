@@ -20,12 +20,7 @@ $seasonId = 2; //change this appropriately
 $homeTeam = '';
 $awayTeam = '';
 
-//the below is the indexes that each value appears in the data array (this is hard coded)
-//$teamGameAttrib = ['Full Time Home Goals' => 4, 'Full Time Away Goals' => 5, 'Full Time Result' => 6, 'Home Shots' => 11, 'Away Shots' => 12, 'Home Shots on Target' => 13, 
-//'Away Shots on Target' => 14, 'Home Corners' => 17, 'Away Corners' => 18, 'Home Fouls' => 15, 'Away Fouls' => 16, 'Home Yellow Cards' => 19, 
-//'Away Yellow Cards' => 20, 'Home Red Cards' => 21, 'Away Red Cards' => 22, 'Home Half Goals' => 7, 'Away Half Goals' => 8];
-
-
+/*
 while(!feof($fileHandle)) {
 	$line = fgets($fileHandle);
 	if($count == 0){
@@ -242,4 +237,5 @@ while(!feof($fileHandle)) {
 	}
 	$count++;
 }
+*/
 ?>
