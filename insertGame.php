@@ -10,7 +10,6 @@ if (mysqli_connect_error()){
 }
 
 
-
 $path = "data/france";
 $leagueId = 5; //change this appropriately
 $seasonId = 1;
@@ -137,10 +136,10 @@ while ($file = readdir($dir_handle)) {
 				$query = "INSERT INTO Game (game_id, date, result) VALUES ($id, '$newDate', '$result');";
 				$result = mysqli_query($con, $query);
 				if($result){
-					echo "Inserted game data<br/>";
+					//echo "Inserted game data<br/>";
 				}
 				else{
-					echo "<font size=\"48\"><strong>GAME DATA NOT INSERTED</strong></font><br/>";
+					echo "GAME DATA NOT INSERTED<br/>";
 				}
 		
 				//get the game id just inserted
@@ -170,7 +169,7 @@ while ($file = readdir($dir_handle)) {
 				$homeHalfGoals);";
 				$result = mysqli_query($con, $query);
 				if($result){
-					echo "Inserted Home TeamGame data<br/>";
+					//echo "Inserted Home TeamGame data<br/>";
 				}
 				else{
 					echo "TEAMGAME HOME NOT INSERTED<br/>";
@@ -203,7 +202,7 @@ while ($file = readdir($dir_handle)) {
 				$awayHalfGoals);";
 				$result = mysqli_query($con, $query);
 				if($result){
-					echo "Inserted Away TeamGame data<br/>";
+					//echo "Inserted Away TeamGame data<br/>";
 				}
 				else{
 					echo "TEAMGAME AWAY NOT INSERTED<br/>";
@@ -220,7 +219,7 @@ while ($file = readdir($dir_handle)) {
 				$query = "INSERT INTO `gameodds`(`game_id`, `site_id`, `H_win_odds`, `Draw_odds`, `A_win_odds`) VALUES ($gameId, $siteId, $hBet365, $dBet365, $aBet365)";
 				$result = mysqli_query($con, $query);
 				if($result){
-					echo "Inserted Bet365 odds data<br/>";
+					//echo "Inserted Bet365 odds data<br/>";
 				}
 				else{
 					echo "BET365 NOT INSERTED<br/>";
@@ -235,7 +234,7 @@ while ($file = readdir($dir_handle)) {
 				$query = "INSERT INTO `gameodds`(`game_id`, `site_id`, `H_win_odds`, `Draw_odds`, `A_win_odds`) VALUES ($gameId, $siteId, $hBetWin, $dBetWin, $aBetWin)";
 				$result = mysqli_query($con, $query);
 				if($result){
-					echo "Inserted Bet&Win odds data<br/><br/><br/>";
+					//echo "Inserted Bet&Win odds data<br/><br/><br/>";
 				}
 				else{
 					echo "BET&WIN NOT INSERTED<br/><br/><br/>";

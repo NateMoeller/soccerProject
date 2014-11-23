@@ -10,7 +10,7 @@ $con=mysqli_connect("localhost","root","", "soccer");
 if (mysqli_connect_error()){
 	echo "Failed to connect to MySQL: " . mysqli_connect_error();
 }
-$leagueId = 5; //change this appropriatly
+$leagueId = 5; //change this
 $seasonId = 1;
 $path = "data/france";
 
