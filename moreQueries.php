@@ -1,34 +1,13 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
-$options = ['Average Goals', 'Average Shots', 'Average Shots on Target', 'Average Yellow cards', 'Average Red Cards', 'Average Fouls', 'Average Corners'];
+$options = [];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
 $selSort = isset($_POST['sort']) ? $_POST['sort'] : 'most';
 
 //process option
-//process option
-if($selOption == "average goals"){
-	$proOption = "goals";
-}
-else if($selOption == "average shots"){
-	$proOption = "shots";
-}
-else if($selOption == "average shots on target"){
-	$proOption = "shots on target";
-}
-else if($selOption == "average yellow cards"){
-	$proOption = "yellows";
-}
-else if($selOption == "average red cards"){
-	$proOption = "reds";
-}
-else if($selOption == "average fouls"){
-	$proOption = "fouls";
-}
-else if($selOption == "average corners"){
-	$proOption = "corners";
-}
+
 //process sort
 if($selSort == 'most'){
 	$sort = "DESC";
@@ -71,7 +50,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 		<?php
 		echo "<br/><br/>";
 		//echo out our form
-		echo "<form action=\"avgQueries.php\" method=\"POST\">";
+		echo "<form action=\"moreQueries.php\" method=\"POST\">";
 		echo "Select a league: ";
 		echo "<select id=\"league\" name=\"league\" class=\"form-control\" style=\"width: 500px;\">";
 		$id = 1;
@@ -135,28 +114,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				echo "Select a Season";
 			}			
 			else{
-				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) / COUNT(`game_id`) AS Avg FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
-				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
-				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
-				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
-				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
-				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
-				$query = substr($query, 0, strlen($query) - 3);
-				$query .= ") GROUP BY `T_name` ORDER BY Avg " . $sort . ";";
-				$result = mysqli_query($con, $query);
-				if(!$result){
-					echo "query did not work";
-				}
-				echo "<table class=\"table table-striped\">";
-				echo "<thead><th>Team Name</th><th>$selOption</th></thead>";
-				echo "<tbody>";
-				while($row = mysqli_fetch_assoc($result)){
-					echo "<tr>";
-					echo "<td>" . $row['T_name'] . "</td><td>" . $row['Avg'] . "</td>";
-					echo "</tr>";
-				}
-				echo "</tbody>";
-				echo "</table>";
+				echo "selected option";
 			}
 			?>
 		</div>

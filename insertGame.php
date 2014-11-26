@@ -120,26 +120,37 @@ while ($file = readdir($dir_handle)) {
 				}
 				$newDate = $year . "-" . $dateElements[1] . "-" . $dateElements[0];
 				if($data[6] == 'H'){
-					$result = mysqli_real_escape_string($con, $data[2]);
+					$gameResult = mysqli_real_escape_string($con, $data[2]);
 					$homeWin = 1;
 					$awayWin = -1;
 				}
 				else if($data[6] == 'A'){
-					$result = mysqli_real_escape_string($con, $data[3]);
+					$gameResult = mysqli_real_escape_string($con, $data[3]);
 					$homeWin = -1;
 					$awayWin = 1;
 				}
 				else{
-					$result = 'Draw';
+					$gameResult = 'Draw';
 					$homeWin = 0;
 					$awayWin = 0;
 				}
 				$homeTeam = mysqli_real_escape_string($con, $data[2]);
 				$awayTeam = mysqli_real_escape_string($con, $data[3]);
 		
-		
+				//HOME TEAM id
+				$query = "SELECT T_id FROM Team WHERE L_id = $leagueId AND season_id = $seasonId AND T_name = '$homeTeam';";
+				$result = mysqli_query($con, $query);
+				$returnData = mysqli_fetch_assoc($result);
+				$homeTeamId = intval($returnData['T_id']);
+				
+				//AWAY TEAM id
+				$query = "SELECT T_id FROM Team WHERE L_id = $leagueId AND season_id = $seasonId AND T_name = '$awayTeam';";
+				$result = mysqli_query($con, $query);
+				$returnData = mysqli_fetch_assoc($result);
+				$awayTeamId = intval($returnData['T_id']);
+				
 				//insert game
-				$query = "INSERT INTO Game (game_id, date, result) VALUES ($id, '$newDate', '$result');";
+				$query = "INSERT INTO `game`(`game_id`, `date`, `result`, `H_team`, `A_team`) VALUES (" . $id . ", '" . $newDate . "', '" . $gameResult . "', " . $homeTeamId . ", " . $awayTeamId . ")";
 				$result = mysqli_query($con, $query);
 				if($result){
 					//echo "Inserted game data<br/>";
@@ -147,16 +158,11 @@ while ($file = readdir($dir_handle)) {
 				else{
 					echo "GAME DATA NOT INSERTED<br/>";
 				}
-		
+				
 				//get the game id just inserted
 				$gameId = mysqli_insert_id($con);
-		
+			
 				//HOME TEAM
-				$query = "SELECT T_id FROM Team WHERE L_id = $leagueId AND season_id = $seasonId AND T_name = '$homeTeam';";
-				$result = mysqli_query($con, $query);
-				$returnData = mysqli_fetch_assoc($result);
-				$teamId = intval($returnData['T_id']);
-
 				$home = 1;
 				$homeGoals = ($data[$teamGameAttrib['Full Time Home Goals']] != '') ? $data[$teamGameAttrib['Full Time Home Goals']] : "NULL";
 				$homeShots = ($data[$teamGameAttrib['Home Shots']] != '') ? $data[$teamGameAttrib['Home Shots']] : "NULL";
@@ -169,9 +175,9 @@ while ($file = readdir($dir_handle)) {
 				//woodwork?!?
 				//offsides?!?
 		
-		
-				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `result`, `home`, `goals`, `shots`, `shots_on_target`, `corners`, `yellows`, `reds`, `fouls`, 
-				`half_goals`) VALUES ($leagueId, $seasonId, $teamId, $gameId, $homeWin, $home, $homeGoals, $homeShots, $homeShotsOnTarget, $homeCorners, $homeYellows, $homeReds, $homeFouls,
+				
+				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `result`, `home`, `goals`, `shots`, `shots on target`, `corners`, `yellows`, `reds`, `fouls`, 
+				`half_goals`) VALUES ($leagueId, $seasonId, $homeTeamId, $gameId, $homeWin, $home, $homeGoals, $homeShots, $homeShotsOnTarget, $homeCorners, $homeYellows, $homeReds, $homeFouls,
 				$homeHalfGoals);";
 				$result = mysqli_query($con, $query);
 				if($result){
@@ -182,13 +188,9 @@ while ($file = readdir($dir_handle)) {
 					echo $query . "<br/>";
 					var_dump($homeShots);
 				}
-		
+				
 		
 				//AWAY TEAM
-				$query = "SELECT T_id FROM Team WHERE L_id = $leagueId AND season_id = $seasonId AND T_name = '$awayTeam';";
-				$result = mysqli_query($con, $query);
-				$returnData = mysqli_fetch_assoc($result);
-				$teamId = intval($returnData['T_id']);
 		
 				$home = 0;
 				$awayGoals = ($data[$teamGameAttrib['Full Time Away Goals']] != '') ? $data[$teamGameAttrib['Full Time Away Goals']] : "NULL";
@@ -202,9 +204,9 @@ while ($file = readdir($dir_handle)) {
 				//woodwork?!?
 				//offsides??!?
 		
-		
-				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `result`, `home`, `goals`, `shots`, `shots_on_target`, `corners`, `yellows`, `reds`, `fouls`, 
-				`half_goals`) VALUES ($leagueId, $seasonId, $teamId, $gameId, $awayWin, $home, $awayGoals, $awayShots, $awayShotsOnTarget, $awayCorners, $awayYellows, $awayReds, $awayFouls,
+				
+				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `result`, `home`, `goals`, `shots`, `shots on target`, `corners`, `yellows`, `reds`, `fouls`, 
+				`half_goals`) VALUES ($leagueId, $seasonId, $awayTeamId, $gameId, $awayWin, $home, $awayGoals, $awayShots, $awayShotsOnTarget, $awayCorners, $awayYellows, $awayReds, $awayFouls,
 				$awayHalfGoals);";
 				$result = mysqli_query($con, $query);
 				if($result){
@@ -215,7 +217,7 @@ while ($file = readdir($dir_handle)) {
 					echo $query . "<br/>";
 					var_dump($awayShots);
 				}
-		
+				
 		
 				//betting sites
 				$siteId = 1;
@@ -237,6 +239,8 @@ while ($file = readdir($dir_handle)) {
 				$hBetWin = round($data[$teamGameAttrib['H Bet&Win']], 2);
 				$dBetWin = round($data[$teamGameAttrib['D Bet&Win']], 2);
 				$aBetWin = round($data[$teamGameAttrib['A Bet&Win']], 2);
+				
+				
 				$query = "INSERT INTO `gameodds`(`game_id`, `site_id`, `H_win_odds`, `Draw_odds`, `A_win_odds`) VALUES ($gameId, $siteId, $hBetWin, $dBetWin, $aBetWin)";
 				$result = mysqli_query($con, $query);
 				if($result){
@@ -245,7 +249,7 @@ while ($file = readdir($dir_handle)) {
 				else{
 					echo "BET&WIN NOT INSERTED<br/><br/><br/>";
 				}
-		
+				
 			}
 			$count++;
 		}
