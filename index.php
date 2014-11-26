@@ -1,6 +1,6 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
-$options = ['Wins', 'Loses', 'Draws', 'Goals', 'Shots', 'Shots on Target', '% shots on target', 'Yellow cards', 'Red Cards', 'Fouls'];
+$options = ['Wins', 'Loses', 'Draws', 'Goals', 'Shots', 'Shots on Target', '% shots on target', 'Yellow cards', 'Red Cards', 'Fouls', 'Corners'];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
@@ -25,7 +25,9 @@ else if($selOption == "red cards"){
 else if($selOption == "fouls"){
 	$proOption = "fouls";
 }
-
+else if($selOption == "corners"){
+	$proOption = "corners";
+}
 //process sort
 if($selSort == 'most'){
 	$sort = "DESC";
@@ -105,41 +107,14 @@ $con = mysqli_connect("localhost","root","", "soccer");
 		</div>
 		<div class="col-md-6" style="float:left;">
 			<?php
-			echo "League: " . $selLeague . "<br/>";
-			echo "Option: " . $selOption . "<br/>";
-			echo "Sort by: " . $selSort . "<br/><br/>";
+			//echo "League: " . $selLeague . "<br/>";
+			//echo "Option: " . $selOption . "<br/>";
+			//echo "Sort by: " . $selSort . "<br/><br/>";
 			
 			
 			if(!isset($season5) && !isset($season4) && !isset($season3) && !isset($season2) && !isset($season1)){
 				echo "Select a Season";
 			}			
-			else if($selOption == "goals" || $selOption == "shots" || $selOption == "shots on target" || $selOption == "yellow cards" || $selOption == "red cards" || 
-			$selOption == "fouls"){
-	
-				//SUM query
-				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) AS Goals FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
-				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
-				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
-				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
-				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
-				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
-				$query = substr($query, 0, strlen($query) - 3);
-				$query .= ") GROUP BY `T_name` ORDER BY Goals " . $sort . ";";
-				$result = mysqli_query($con, $query);
-				if(!$result){
-					echo "query did not work";
-				}
-				echo "<table class=\"table table-striped\">";
-				echo "<thead><th>Team Name</th><th>$selOption</th></thead>";
-				echo "<tbody>";
-				while($row = mysqli_fetch_assoc($result)){
-					echo "<tr>";
-					echo "<td>" . $row['T_name'] . "</td><td>" . $row['Goals'] . "</td>";
-					echo "</tr>";
-				}
-				echo "</tbody>";
-				echo "</table>";
-			}
 			else if ($selOption == "wins" || $selOption == "loses" || $selOption == "draws"){
 				if($selOption == "wins"){
 					$gameResult = 1;
@@ -195,6 +170,31 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				while($row = mysqli_fetch_assoc($result)){
 					echo "<tr>";
 					echo "<td>" . $row['T_name'] . "</td><td>" . $row['ShotsPercent'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";
+			}
+			else{
+				//SUM query
+				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) AS Goals FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") GROUP BY `T_name` ORDER BY Goals " . $sort . ";";
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Team Name</th><th>$selOption</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					echo "<tr>";
+					echo "<td>" . $row['T_name'] . "</td><td>" . $row['Goals'] . "</td>";
 					echo "</tr>";
 				}
 				echo "</tbody>";
