@@ -1,8 +1,6 @@
 <?php
 echo "Insert team data...<br/>";
 
-//TODO loop over multiple files?!?
-
 // Create connection
 $con=mysqli_connect("localhost","root","", "soccer");
 

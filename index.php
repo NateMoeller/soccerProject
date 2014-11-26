@@ -98,22 +98,50 @@ $con = mysqli_connect("localhost","root","", "soccer");
 			echo "Sort by: " . $selSort . "<br/><br/>";
 			
 			
-			if(isset($_POST['league'])){
+			if($selOption == "goals" || $selOption == "shots" || $selOption == "shots on target" || $selOption == "yellow cards" || $selOption == "red cards" || 
+			$selOption == "fouls"){
 				//execute the query
 	
 				//count query
-				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) AS Goals FROM  `teamgame` NATURAL JOIN  `team` WHERE team_id = T_id AND L_id = $selLeague AND 
+				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) AS Goals FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND 
 				season_id=5 GROUP BY `T_name` ORDER BY Goals " . $sort . ";";
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
 				}
 				echo "<table class=\"table table-striped\">";
-				echo "<thead><th>Team Name</th><th>$selOption</th></thead>"; //TODO: the goals will change
+				echo "<thead><th>Team Name</th><th>$selOption</th></thead>";
 				echo "<tbody>";
 				while($row = mysqli_fetch_assoc($result)){
 					echo "<tr>";
 					echo "<td>" . $row['T_name'] . "</td><td>" . $row['Goals'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";
+			}
+			else if ($selOption == "wins" || $selOption == "loses" || $selOption == "draws"){
+				if($selOption == "wins"){
+					$gameResult = 1;
+				}
+				else if ($selOption == "loses"){
+					$gameResult = -1;
+				}
+				else{
+					$gameResult = 0;
+				}
+				$query = "SELECT `T_name`, COUNT(result) AS Result FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague 
+				AND season_id = 4 AND result = $gameResult GROUP BY team_id ORDER BY Result " . $sort . ";"; //win query
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Team Name</th><th>$selOption</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					echo "<tr>";
+					echo "<td>" . $row['T_name'] . "</td><td>" . $row['Result'] . "</td>";
 					echo "</tr>";
 				}
 				echo "</tbody>";

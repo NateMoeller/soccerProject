@@ -121,12 +121,18 @@ while ($file = readdir($dir_handle)) {
 				$newDate = $year . "-" . $dateElements[1] . "-" . $dateElements[0];
 				if($data[6] == 'H'){
 					$result = mysqli_real_escape_string($con, $data[2]);
+					$homeWin = 1;
+					$awayWin = -1;
 				}
 				else if($data[6] == 'A'){
 					$result = mysqli_real_escape_string($con, $data[3]);
+					$homeWin = -1;
+					$awayWin = 1;
 				}
 				else{
 					$result = 'Draw';
+					$homeWin = 0;
+					$awayWin = 0;
 				}
 				$homeTeam = mysqli_real_escape_string($con, $data[2]);
 				$awayTeam = mysqli_real_escape_string($con, $data[3]);
@@ -164,8 +170,8 @@ while ($file = readdir($dir_handle)) {
 				//offsides?!?
 		
 		
-				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `home`, `goals`, `shots`, `shots_on_target`, `corners`, `yellows`, `reds`, `fouls`, 
-				`half_goals`) VALUES ($leagueId, $seasonId, $teamId, $gameId, $home, $homeGoals, $homeShots, $homeShotsOnTarget, $homeCorners, $homeYellows, $homeReds, $homeFouls,
+				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `result`, `home`, `goals`, `shots`, `shots_on_target`, `corners`, `yellows`, `reds`, `fouls`, 
+				`half_goals`) VALUES ($leagueId, $seasonId, $teamId, $gameId, $homeWin, $home, $homeGoals, $homeShots, $homeShotsOnTarget, $homeCorners, $homeYellows, $homeReds, $homeFouls,
 				$homeHalfGoals);";
 				$result = mysqli_query($con, $query);
 				if($result){
@@ -197,8 +203,8 @@ while ($file = readdir($dir_handle)) {
 				//offsides??!?
 		
 		
-				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `home`, `goals`, `shots`, `shots_on_target`, `corners`, `yellows`, `reds`, `fouls`, 
-				`half_goals`) VALUES ($leagueId, $seasonId, $teamId, $gameId, $home, $awayGoals, $awayShots, $awayShotsOnTarget, $awayCorners, $awayYellows, $awayReds, $awayFouls,
+				$query = "INSERT INTO `teamgame`(`L_id`, `season_id`, `team_id`, `game_id`, `result`, `home`, `goals`, `shots`, `shots_on_target`, `corners`, `yellows`, `reds`, `fouls`, 
+				`half_goals`) VALUES ($leagueId, $seasonId, $teamId, $gameId, $awayWin, $home, $awayGoals, $awayShots, $awayShotsOnTarget, $awayCorners, $awayYellows, $awayReds, $awayFouls,
 				$awayHalfGoals);";
 				$result = mysqli_query($con, $query);
 				if($result){

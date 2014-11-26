@@ -77,7 +77,7 @@ if($result){
 }
 
 //create team-game table
-$query = "CREATE TABLE TeamGame(L_id INT NOT NULL, season_id INT NOT NULL, team_id INT NOT NULL, game_id INT NOT NULL, home INT NOT NULL, goals INT, shots INT, shots_on_target INT, corners INT, yellows INT, reds INT, fouls INT,
+$query = "CREATE TABLE TeamGame(L_id INT NOT NULL, season_id INT NOT NULL, team_id INT NOT NULL, game_id INT NOT NULL, result INT NOT NULL, home INT NOT NULL, goals INT, shots INT, shots_on_target INT, corners INT, yellows INT, reds INT, fouls INT,
 		  half_goals INT, woodwork INT, offsides INT, PRIMARY KEY (L_id, season_id, team_id, game_id));";
 $result = mysqli_query($con, $query);
 if($result){
