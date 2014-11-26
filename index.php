@@ -1,6 +1,6 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
-$options = ['Wins', 'Loses', 'Draws', 'Goals', 'Shots', 'Shots on Target', 'Yellow cards', 'Red Cards', 'Fouls'];
+$options = ['Wins', 'Loses', 'Draws', 'Goals', 'Shots', 'Shots on Target', '% shots on target', 'Yellow cards', 'Red Cards', 'Fouls'];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
@@ -34,9 +34,21 @@ else{
 	$sort = "ASC";
 }
 
-//right now only season 2014/15 works
-$season2014_15 = isset($_POST['2014/15']) ? $_POST['2014/15'] : '';
-
+if(isset($_POST['2014/15'])){
+	$season5 = $_POST['2014/15'];
+}
+if(isset($_POST['2013/14'])){
+	$season4 = $_POST['2013/14'];
+}
+if(isset($_POST['2012/13'])){
+	$season3 = $_POST['2012/13'];
+}
+if(isset($_POST['2011/12'])){
+	$season2 = $_POST['2011/12'];
+}
+if(isset($_POST['2010/11'])){
+	$season1 = $_POST['2010/11'];
+}
 $con = mysqli_connect("localhost","root","", "soccer");
 ?>
 <!DOCTYPE html>
@@ -66,11 +78,11 @@ $con = mysqli_connect("localhost","root","", "soccer");
 		
 				
 		echo "<br/>Season:<br/>";
-		echo "<label class=\"checkbox-inline\"><input name=\"2014/15\" type=\"checkbox\" value=\"2014/15\">2014/2015</label>";
-		echo "<label class=\"checkbox-inline\"><input type=\"checkbox\" value=\"\">2013/2014</label>";
-		echo "<label class=\"checkbox-inline\"><input type=\"checkbox\" value=\"\">2012/2013</label>";
-		echo "<label class=\"checkbox-inline\"><input type=\"checkbox\" value=\"\">2011/2012</label>";
-		echo "<label class=\"checkbox-inline\"><input type=\"checkbox\" value=\"\">2010/2011</label>";
+		echo "<label class=\"checkbox-inline\"><input name=\"2014/15\" type=\"checkbox\" value=\"5\">2014/2015</label>";
+		echo "<label class=\"checkbox-inline\"><input name=\"2013/14\" type=\"checkbox\" value=\"4\">2013/2014</label>";
+		echo "<label class=\"checkbox-inline\"><input name=\"2012/13\" type=\"checkbox\" value=\"3\">2012/2013</label>";
+		echo "<label class=\"checkbox-inline\"><input name=\"2011/12\" type=\"checkbox\" value=\"2\">2011/2012</label>";
+		echo "<label class=\"checkbox-inline\"><input name=\"2010/11\" type=\"checkbox\" value=\"1\">2010/2011</label>";
 		
 		echo "<br/>Select:"; 
 		echo "<select id=\"option\" name=\"option\" class=\"form-control\" style=\"width: 500px;\">";
@@ -98,13 +110,21 @@ $con = mysqli_connect("localhost","root","", "soccer");
 			echo "Sort by: " . $selSort . "<br/><br/>";
 			
 			
-			if($selOption == "goals" || $selOption == "shots" || $selOption == "shots on target" || $selOption == "yellow cards" || $selOption == "red cards" || 
+			if(!isset($season5) && !isset($season4) && !isset($season3) && !isset($season2) && !isset($season1)){
+				echo "Select a Season";
+			}			
+			else if($selOption == "goals" || $selOption == "shots" || $selOption == "shots on target" || $selOption == "yellow cards" || $selOption == "red cards" || 
 			$selOption == "fouls"){
-				//execute the query
 	
-				//count query
-				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) AS Goals FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND 
-				season_id=5 GROUP BY `T_name` ORDER BY Goals " . $sort . ";";
+				//SUM query
+				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) AS Goals FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") GROUP BY `T_name` ORDER BY Goals " . $sort . ";";
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
@@ -130,8 +150,16 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				else{
 					$gameResult = 0;
 				}
-				$query = "SELECT `T_name`, COUNT(result) AS Result FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague 
-				AND season_id = 4 AND result = $gameResult GROUP BY team_id ORDER BY Result " . $sort . ";"; //win query
+				
+				//SUM query
+				$query = "SELECT `T_name`, COUNT(result) AS Result FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND ("; 
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") AND result = $gameResult GROUP BY team_id ORDER BY Result " . $sort . ";";
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
@@ -147,31 +175,33 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				echo "</tbody>";
 				echo "</table>";
 			}
+			else if($selOption == "% shots on target"){
+				$query = "SELECT `T_name`, SUM(`shots on target`) / SUM(`shots`) AS ShotsPercent FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id
+				AND L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") GROUP BY `T_name` ORDER BY ShotsPercent " . $sort . ";";
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Team Name</th><th>$selOption</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					echo "<tr>";
+					echo "<td>" . $row['T_name'] . "</td><td>" . $row['ShotsPercent'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";
+			}
 			?>
 		</div>
-	</div>
-	<div class="row">
-		<!--
-		
-			<thead>
-				<th>col1</th>
-				<th>col2</th>
-				<th>col3</th>
-			</thead>
-			<tbody>
-				<tr>
-					<td>1</td>
-					<td>2</td>
-					<td>3</td>
-				</tr>
-				<tr>
-					<td>4</td>
-					<td>5</td>
-					<td>6</td>
-				</tr>
-			</tbody>
-		</table>
-		-->
 	</div>
 </div>
 </body>
