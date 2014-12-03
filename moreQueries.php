@@ -1,7 +1,7 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
 $options = ['Games which were won after receiving a red card', '% of 1st and 2nd half goals', 'Games lost after scoring 2 or more goals in the first half',
-			'Home Win Percentage'];
+			'Home Win Percentage', 'Away Win Percentage'];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
@@ -43,7 +43,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 <script type=\"text/javascript\" src=\"js/jquery-1.10.2.js\"></script>
 </head>
 <body>
-<div class="container">
+<div class="container" style="height:800px">
 	<h1>Soccer Application</h1>
 	<a href="index.php">Aggregate Queries</a> | <a href="avgQueries.php">Average Queries</a> | <a href="moreQueries.php">More Queries</a>
 	<div class="row">
@@ -177,7 +177,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 					echo "query did not work";
 				}
 				echo "<table class=\"table table-striped\">";
-				echo "<thead><th>Team Name</th><th>% of First half Goals</th><th>Percent of Second half goals</th></thead>";
+				echo "<thead><th>Team Name</th><th>% of First half Goals</th><th>% of Second half goals</th></thead>";
 				echo "<tbody>";
 				while($row = mysqli_fetch_assoc($result)){
 					echo "<tr>";
@@ -265,12 +265,51 @@ $con = mysqli_connect("localhost","root","", "soccer");
 					echo "</tr>";
 				}
 				echo "</tbody>";
+				echo "</table>";							
+			}
+			else if($selOption == "away win percentage"){
+				$query = "SELECT A.T_name, A.AwayWins / B.AwayGames AS AwayWinPercentage FROM (
+						(SELECT T_name, COUNT(*) AS AwayWins FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") AND home = 0 AND result = 1 
+						GROUP BY team_id) AS A INNER JOIN
+						(SELECT T_name, COUNT(*) AS AwayGames FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);		
+				$query .=") AND home = 0 GROUP BY team_id) AS B ON A.`T_name` = B.`T_name`) ORDER BY AwayWinPercentage " . $sort . ";";
+				
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Team Name</th><th>Away Win Percentage</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					echo "<tr>";
+					echo "<td>" . $row['T_name'] . "</td><td>" . $row['AwayWinPercentage'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
 				echo "</table>";
-								
 			}
 			?>
 		</div>
 	</div>
 </div>
+<footer class="footer">
+    <div class="container">
+      <p class="text-muted"><br/><br/><br/>Project by Nathan Moeller, John McGrory</p>
+    </div>
+</footer>
 </body>
 </html>

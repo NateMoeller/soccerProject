@@ -62,7 +62,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 <script type=\"text/javascript\" src=\"js/jquery-1.10.2.js\"></script>
 </head>
 <body>
-<div class="container">
+<div class="container" style="height:800px">
 	<h1>Soccer Application</h1>
 	<a href="index.php">Aggregate Queries</a> | <a href="avgQueries.php">Average Queries</a> | <a href="moreQueries.php">More Queries</a>
 	<div class="row">
@@ -279,5 +279,10 @@ $con = mysqli_connect("localhost","root","", "soccer");
 		</div>
 	</div>
 </div>
+<footer class="footer">
+    <div class="container">
+      <p class="text-muted"><br/><br/><br/>Project by Nathan Moeller, John McGrory</p>
+    </div>
+</footer>
 </body>
 </html>
