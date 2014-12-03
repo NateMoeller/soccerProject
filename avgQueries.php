@@ -64,7 +64,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 </head>
 <body>
 <div class="container" style="height:800px">
-	<h1>Soccer Application</h1>
+	<h1>Soccer Application <img src="ball.jpg" height="42" width="62"></h1>
 	<a href="index.php">Aggregate Queries</a> | <a href="avgQueries.php">Average Queries</a> | <a href="moreQueries.php">More Queries</a>
 	<div class="row">
 		<div class="col-md-6" style="float:left;">
