@@ -135,23 +135,24 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				echo "Select a Season";
 			}			
 			else if($selOption == "upsets"){
-				$query = "SELECT * FROM
-						(SELECT t1.L_id, t1.season_id, t1.team_id AS team1, t1.game_id, t1.result AS result1, t1.goals AS goals1, t2.team_id AS team2, t2.result AS result2, 
-						t2.goals AS goals2 FROM `teamgame` t1 INNER JOIN `teamgame` t2 ON t1.game_id = t2.game_id WHERE t1.L_id = $selLeague AND (";
+				$query = "SELECT B.L_id, B.season_id, B.team1 AS team1, B.goals1 AS goals1, B.team2 AS team2, B.goals2 AS goals2, B.H_win_odds AS H_win_odds, B.Draw_odds AS Draw_odds,
+						B.A_win_odds AS A_win_odds, date FROM (SELECT * FROM (SELECT t1.L_id, t1.season_id, t1.team_id AS team1, t1.game_id, t1.result AS result1, t1.goals AS goals1, 
+						t2.team_id AS team2, t2.result AS result2, t2.goals AS goals2 FROM `teamgame` t1 INNER JOIN `teamgame` t2 ON t1.game_id = t2.game_id WHERE t1.L_id = $selLeague AND (";
 				$query .= (isset($season5)) ? "t1.season_id = $season5 OR ": '';
 				$query .= (isset($season4)) ? "t1.season_id = $season4 OR ": '';
 				$query .= (isset($season3)) ? "t1.season_id = $season3 OR ": '';
 				$query .= (isset($season2)) ? "t1.season_id = $season2 OR ": '';
 				$query .= (isset($season1)) ? "t1.season_id = $season1 OR ": '';
-				$query = substr($query, 0, strlen($query) - 3);
-				$query .=") AND (t1.home =1 AND t2.home =0)) AS A NATURAL JOIN `gameodds` GO WHERE GO.game_id = A.game_id AND site_id = $selSite AND 
-						((A.result1 = 1 AND H_win_odds > A_win_odds) OR (A.result2 = 1 AND A_win_odds > H_win_odds)); ";
+				$query = substr($query, 0, strlen($query) - 3);		
+				$query .= ") AND (t1.home =1 AND t2.home =0)) AS A NATURAL JOIN `gameodds` GO WHERE GO.game_id = A.game_id AND site_id = $selSite 
+						AND ((A.result1 = 1 AND H_win_odds > A_win_odds) OR 
+						(A.result2 = 1 AND A_win_odds > H_win_odds))) AS B NATURAL JOIN `game` WHERE B.game_id = game_id";
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
 				}
 				echo "<table class=\"table table-striped\">";
-				echo "<thead><th>Team1 Name</th><th>Team1 Goals</th><th>Team1 Win Odds</th><th>Team2 Name</th><th>Team2 Goals</th><th>Team2 Win Odds</th></thead>";
+				echo "<thead><th>Date</th><th>Team1 Name</th><th>Team1 Goals</th><th>Team1 Win Odds</th><th>Team2 Name</th><th>Team2 Goals</th><th>Team2 Win Odds</th></thead>";
 				echo "<tbody>";
 				while($row = mysqli_fetch_assoc($result)){
 					//this is kinda a cheat
@@ -171,7 +172,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 					$data = mysqli_fetch_assoc($resultE);
 					$teamName2 = $data['T_name'];
 					echo "<tr>";
-					echo "<td>" . $teamName1 . "</td><td>" . $row['goals1'] . "</td><td>" . $row['H_win_odds'] . "</td><td>" . $teamName2 . "</td><td>" . $row['goals2'] . "</td>
+					echo "<td>" . $row['date'] . "</td><td>" . $teamName1 . "</td><td>" . $row['goals1'] . "</td><td>" . $row['H_win_odds'] . "</td><td>" . $teamName2 . "</td><td>" . $row['goals2'] . "</td>
 					<td>" . $row['A_win_odds'] . "</td>";
 					echo "</tr>";
 				}
