@@ -1,6 +1,6 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
-$options = [];
+$options = ['Games which were won after receiving a red card', '% of 1st and 2nd half goals', 'Games lost after scoring 2 or more goals in the first half'];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
@@ -113,8 +113,123 @@ $con = mysqli_connect("localhost","root","", "soccer");
 			if(!isset($season5) && !isset($season4) && !isset($season3) && !isset($season2) && !isset($season1)){
 				echo "Select a Season";
 			}			
-			else{
-				echo "selected option";
+			else if($selOption == "games which were won after receiving a red card"){
+				$query = "SELECT A.L_id, A.season_id, A.team1, A.game_id, A.result1, A.goals1, A.reds1, A.team2, A.result2, A.goals2, A.reds2, date FROM
+						(SELECT t1.L_id, t1.season_id, t1.team_id AS team1, t1.game_id, t1.result AS result1, t1.goals AS goals1, t1.reds AS reds1, 
+						t2.team_id AS team2, t2.result AS result2, t2.goals AS goals2, t2.reds AS reds2
+						FROM  `teamgame` t1 INNER JOIN  `teamgame` t2 ON t1.game_id = t2.game_id WHERE t1.L_id = $selLeague
+						AND (";
+				$query .= (isset($season5)) ? "t1.season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "t1.season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "t1.season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "t1.season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "t1.season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);		 
+				$query .= ") AND (t1.home =1 AND t2.home =0)AND ((t1.result =1 AND t1.reds > 0)OR (t2.result =1 AND t2.reds >0))
+						) AS A
+						NATURAL JOIN `game` WHERE game_id = A.game_id;";
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Date</th><th>Team1 Name</th><th>Team1 Goals</th><th>Team1 Reds</th><th>Team2 Name</th><th>Team2 Goals</th><th>Team2 Reds</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					//this is kinda a cheat
+					$lid = intval($row['L_id']);
+					$season_id = intval($row['season_id']);
+					$team1_id = intval($row['team1']);
+					$team2_id = intval($row['team2']);
+					//get team1 name
+					$query = "SELECT T_name FROM team WHERE L_id = $lid ANd season_id = $season_id AND T_id = $team1_id;";
+					$resultE = mysqli_query($con, $query);
+					$data = mysqli_fetch_assoc($resultE);
+					$teamName1 = $data['T_name'];
+					
+					//get team2 name
+					$query = "SELECT T_name FROM team WHERE L_id = $lid ANd season_id = $season_id AND T_id = $team2_id;";
+					$resultE = mysqli_query($con, $query);
+					$data = mysqli_fetch_assoc($resultE);
+					$teamName2 = $data['T_name'];
+					echo "<tr>";
+					echo "<td>" . $row['date'] . "</td><td>" . $teamName1 . "</td><td>" . $row['goals1'] . "</td><td>" . $row['reds1'] . "</td><td>" . $teamName2 . "</td><td>" . $row['goals2'] . "</td>
+					<td>" . $row['reds2'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";
+			}
+			else if($selOption == "% of 1st and 2nd half goals"){
+				$query = "SELECT T_name, SUM(  `half_goals` ) / SUM(  `goals` ) AS FirstHalfPercent, 1 - ( SUM(  `half_goals` ) / SUM(  `goals` ) ) AS SecondHalfPercent
+						FROM  `teamgame` NATURAL JOIN  `team` WHERE team_id = T_id AND L_id =$selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") GROUP BY  `T_name` ORDER BY T_name ASC";
+				
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Team Name</th><th>% of First half Goals</th><th>Percent of Second half goals</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					echo "<tr>";
+					echo "<td>" . $row['T_name'] . "</td><td>" . $row['FirstHalfPercent'] . "</td><td>" . $row['SecondHalfPercent'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";
+			}
+			else if($selOption == "games lost after scoring 2 or more goals in the first half"){
+				$query = "SELECT A.L_id, A.season_id, A.team1, A.game_id, A.result1, A.goals1, A.half1, A.team2, A.result2, A.goals2, A.half2, date FROM 
+						 (SELECT t1.L_id, t1.season_id, t1.team_id AS team1, t1.game_id, t1.result AS result1, t1.goals AS goals1, t1.half_goals AS half1, t2.team_id AS team2, 
+						t2.result AS result2, t2.goals AS goals2, t2.half_goals AS half2 FROM `teamgame` t1 INNER JOIN `teamgame` 
+						t2 ON t1.game_id = t2.game_id WHERE t1.L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "t1.season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "t1.season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "t1.season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "t1.season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "t1.season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);		
+				$query .= ") AND (t1.home =1 AND t2.home =0) AND ((t1.result=-1 AND t1.half_goals > 2) OR (t2.result=-1 AND t2.half_goals > 2))) 
+						AS A NATURAL JOIN `game` WHERE game_id = A.game_id;";
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Date</th><th>Team1 Name</th><th>Team1 Goals</th><th>Team1 First Half Goals</th><th>Team2 Name</th><th>Team2 Goals</th><th>Team2 First Half Goals</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					//this is kinda a cheat
+					$lid = intval($row['L_id']);
+					$season_id = intval($row['season_id']);
+					$team1_id = intval($row['team1']);
+					$team2_id = intval($row['team2']);
+					//get team1 name
+					$query = "SELECT T_name FROM team WHERE L_id = $lid ANd season_id = $season_id AND T_id = $team1_id;";
+					$resultE = mysqli_query($con, $query);
+					$data = mysqli_fetch_assoc($resultE);
+					$teamName1 = $data['T_name'];
+					
+					//get team2 name
+					$query = "SELECT T_name FROM team WHERE L_id = $lid ANd season_id = $season_id AND T_id = $team2_id;";
+					$resultE = mysqli_query($con, $query);
+					$data = mysqli_fetch_assoc($resultE);
+					$teamName2 = $data['T_name'];
+					echo "<tr>";
+					echo "<td>" . $row['date'] . "</td><td>" . $teamName1 . "</td><td>" . $row['goals1'] . "</td><td>" . $row['half1'] . "</td><td>" . $teamName2 . "</td><td>" . $row['goals2'] . "</td>
+					<td>" . $row['half2'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";				
 			}
 			?>
 		</div>

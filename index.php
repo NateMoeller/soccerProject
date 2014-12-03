@@ -1,6 +1,6 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
-$options = ['Wins', 'Loses', 'Draws', 'Goals', 'Shots', 'Shots on Target', '% shots on target', 'Yellow cards', 'Red Cards', 'Fouls', 'Corners'];
+$options = ['Table', 'Wins', 'Loses', 'Draws', 'Goals', 'Shots', 'Shots on Target', '% shots on target', 'Yellow cards', 'Red Cards', 'Fouls', 'Corners'];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
@@ -157,6 +157,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
 				$query = substr($query, 0, strlen($query) - 3);
 				$query .= ") AND result = $gameResult GROUP BY team_id ORDER BY Result " . $sort . ";";
+				echo $query;
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
@@ -197,6 +198,57 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				echo "</tbody>";
 				echo "</table>";
 			}
+			else if($selOption == "table"){
+				$query = "SELECT `T_name`, E.`Wins`, E.`Draws`, E.`Loses`, E.`TotalPoints` FROM 
+						(SELECT C.`L_id`, C.`season_id`, C.`team_id`, `Wins`, `Draws`, `Loses`, (Wins * 3) + Draws AS TotalPoints FROM
+							(SELECT A.`L_id`, A.`season_id`, A.`team_id`, `Wins`, `Draws` FROM (
+								(SELECT  `L_id`, `season_id`, `team_id` , COUNT( result ) AS Wins FROM  `teamgame` WHERE L_id =$selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);				
+				$query .= ") AND result =1 GROUP BY team_id) AS A
+							INNER JOIN    
+							(SELECT  `L_id`, `season_id`, `team_id` , COUNT( result ) AS Draws FROM  `teamgame` WHERE L_id =$selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);	
+				$query .=") AND result =0 GROUP BY team_id) AS B ON A.team_id = B.team_id)) AS C
+							LEFT JOIN
+							(SELECT  `L_id`, `season_id`, `team_id` , COUNT( result ) AS Loses FROM  `teamgame` WHERE L_id =$selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") AND result =-1 GROUP BY team_id) AS D ON C.team_id = D.team_id
+						) AS E
+						NATURAL JOIN `team` WHERE L_id = E.`L_id` AND season_id = E.`season_id` AND T_id = E.`team_id` ORDER BY TotalPoints DESC; ";
+				
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Team Name</th><th>Wins</th><th>Draws</th><th>Loses</th><th>Total Points</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					echo "<tr>";
+					$loses = ($row['Loses'] != null) ? $row['Loses'] : 0;
+					$wins = ($row['Wins'] != null) ? $row['Wins'] : 0;
+					$draws = ($row['Draws'] != null) ? $row['Draws'] : 0;
+					echo "<td>" . $row['T_name'] . "</td><td>" . $wins . "</td><td>" . $draws . "</td><td>" . $loses . "</td><td>" . $row['TotalPoints'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";
+			}
 			else{
 				//SUM query
 				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) AS Goals FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
@@ -207,6 +259,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
 				$query = substr($query, 0, strlen($query) - 3);
 				$query .= ") GROUP BY `T_name` ORDER BY Goals " . $sort . ";";
+				echo $query;
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
