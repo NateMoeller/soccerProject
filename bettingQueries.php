@@ -1,33 +1,18 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
-$options = ['Average Goals', 'Average Shots', 'Average Shots on Target', 'Average Yellow cards', 'Average Red Cards', 'Average Fouls', 'Average Corners'];
+$options = ['Upsets'];
+$sites = ['bet365', 'Bet&Win'];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
 $selSort = isset($_POST['sort']) ? $_POST['sort'] : 'most';
+$selSite = isset($_POST['site']) ? intval($_POST['site']) : 1;
 
-//process option
-//process option
-if($selOption == "average goals"){
-	$proOption = "goals";
+if($selSite == 1){
+	$proSite = "Bet365";
 }
-else if($selOption == "average shots"){
-	$proOption = "shots";
-}
-else if($selOption == "average shots on target"){
-	$proOption = "shots on target";
-}
-else if($selOption == "average yellow cards"){
-	$proOption = "yellows";
-}
-else if($selOption == "average red cards"){
-	$proOption = "reds";
-}
-else if($selOption == "average fouls"){
-	$proOption = "fouls";
-}
-else if($selOption == "average corners"){
-	$proOption = "corners";
+else if($selSite == 3){
+	$proSite = "Bet&Win";
 }
 //process sort
 if($selSort == 'most'){
@@ -71,7 +56,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 		<?php
 		echo "<br/><br/>";
 		//echo out our form
-		echo "<form action=\"avgQueries.php\" method=\"POST\">";
+		echo "<form action=\"bettingQueries.php\" method=\"POST\">";
 		echo "Select a league: ";
 		echo "<select id=\"league\" name=\"league\" class=\"form-control\" style=\"width: 500px;\">";
 		$id = 1;
@@ -95,6 +80,20 @@ $con = mysqli_connect("localhost","root","", "soccer");
 			echo "<option value='$option'>$option</option>";
 		}
 		echo "</select>";
+		
+		echo "<br/>Betting Site:<br/>";
+		echo "<select id=\"site\" name=\"site\" class=\"form-control\" style=\"width: 500px;\">";
+		foreach($sites as $site){
+			if($site == "bet365"){
+				$val = 1;
+			}
+			else if($site == "Bet&Win"){
+				$val = 3;
+			}
+			echo "<option value=$val>$site</option>";
+		}
+		echo "</select>";
+		
 		
 		echo "<br/>Sort by:";
 		echo "<select id=\"sort\" name=\"sort\" class=\"form-control\" style=\"width: 500px;\">";
@@ -126,6 +125,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				$title .= (isset($season1)) ? "2010/11, " : '';
 				$title = substr($title, 0, strlen($title) -2);
 				$title .= ")";
+				$title .= " According to $proSite";
 				$title .= "</h3>";
 				echo $title;
 			}
@@ -134,29 +134,49 @@ $con = mysqli_connect("localhost","root","", "soccer");
 			if(!isset($season5) && !isset($season4) && !isset($season3) && !isset($season2) && !isset($season1)){
 				echo "Select a Season";
 			}			
-			else{
-				$query = "SELECT `T_name`, SUM(`" . $proOption . "`) / COUNT(`game_id`) AS Avg FROM  `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
-				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
-				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
-				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
-				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
-				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+			else if($selOption == "upsets"){
+				$query = "SELECT * FROM
+						(SELECT t1.L_id, t1.season_id, t1.team_id AS team1, t1.game_id, t1.result AS result1, t1.goals AS goals1, t2.team_id AS team2, t2.result AS result2, 
+						t2.goals AS goals2 FROM `teamgame` t1 INNER JOIN `teamgame` t2 ON t1.game_id = t2.game_id WHERE t1.L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "t1.season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "t1.season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "t1.season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "t1.season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "t1.season_id = $season1 OR ": '';
 				$query = substr($query, 0, strlen($query) - 3);
-				$query .= ") GROUP BY `T_name` ORDER BY Avg " . $sort . ";";
+				$query .=") AND (t1.home =1 AND t2.home =0)) AS A NATURAL JOIN `gameodds` GO WHERE GO.game_id = A.game_id AND site_id = $selSite AND 
+						((A.result1 = 1 AND H_win_odds > A_win_odds) OR (A.result2 = 1 AND A_win_odds > H_win_odds)); ";
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
 				}
 				echo "<table class=\"table table-striped\">";
-				echo "<thead><th>Team Name</th><th>$selOption</th></thead>";
+				echo "<thead><th>Team1 Name</th><th>Team1 Goals</th><th>Team1 Win Odds</th><th>Team2 Name</th><th>Team2 Goals</th><th>Team2 Win Odds</th></thead>";
 				echo "<tbody>";
 				while($row = mysqli_fetch_assoc($result)){
+					//this is kinda a cheat
+					$lid = intval($row['L_id']);
+					$season_id = intval($row['season_id']);
+					$team1_id = intval($row['team1']);
+					$team2_id = intval($row['team2']);
+					//get team1 name
+					$query = "SELECT T_name FROM team WHERE L_id = $lid ANd season_id = $season_id AND T_id = $team1_id;";
+					$resultE = mysqli_query($con, $query);
+					$data = mysqli_fetch_assoc($resultE);
+					$teamName1 = $data['T_name'];
+					
+					//get team2 name
+					$query = "SELECT T_name FROM team WHERE L_id = $lid ANd season_id = $season_id AND T_id = $team2_id;";
+					$resultE = mysqli_query($con, $query);
+					$data = mysqli_fetch_assoc($resultE);
+					$teamName2 = $data['T_name'];
 					echo "<tr>";
-					echo "<td>" . $row['T_name'] . "</td><td>" . $row['Avg'] . "</td>";
+					echo "<td>" . $teamName1 . "</td><td>" . $row['goals1'] . "</td><td>" . $row['H_win_odds'] . "</td><td>" . $teamName2 . "</td><td>" . $row['goals2'] . "</td>
+					<td>" . $row['A_win_odds'] . "</td>";
 					echo "</tr>";
 				}
 				echo "</tbody>";
-				echo "</table>";
+				echo "</table>";		
 			}
 			?>
 		</div>

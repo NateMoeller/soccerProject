@@ -64,7 +64,7 @@ $con = mysqli_connect("localhost","root","", "soccer");
 <body>
 <div class="container" style="height:800px">
 	<h1>Soccer Application <img src="ball.jpg" height="42" width="62"></img></h1>
-	<a href="index.php">Aggregate Queries</a> | <a href="avgQueries.php">Average Queries</a> | <a href="moreQueries.php">More Queries</a>
+	<a href="index.php">Aggregate Queries</a> | <a href="avgQueries.php">Average Queries</a> | <a href="bettingQueries.php">Betting Queries</a> | <a href="moreQueries.php">More Queries</a>
 	<div class="row">
 		<div class="col-md-6" style="float:left;">
 		<?php
@@ -157,7 +157,6 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
 				$query = substr($query, 0, strlen($query) - 3);
 				$query .= ") AND result = $gameResult GROUP BY team_id ORDER BY Result " . $sort . ";";
-				echo $query;
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
@@ -259,7 +258,6 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
 				$query = substr($query, 0, strlen($query) - 3);
 				$query .= ") GROUP BY `T_name` ORDER BY Goals " . $sort . ";";
-				echo $query;
 				$result = mysqli_query($con, $query);
 				if(!$result){
 					echo "query did not work";
