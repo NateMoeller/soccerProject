@@ -1,6 +1,7 @@
 <?php
 $leagues = ['Premier League', 'Bundesliga 1', 'La Liga', 'Serie A', 'Le Championnat'];
-$options = ['Games which were won after receiving a red card', '% of 1st and 2nd half goals', 'Games lost after scoring 2 or more goals in the first half'];
+$options = ['Games which were won after receiving a red card', '% of 1st and 2nd half goals', 'Games lost after scoring 2 or more goals in the first half',
+			'Home Win Percentage'];
 
 $selLeague = isset($_POST['league']) ? $_POST['league'] : '';
 $selOption = isset($_POST['option']) ? strtolower($_POST['option']) : '';
@@ -230,6 +231,42 @@ $con = mysqli_connect("localhost","root","", "soccer");
 				}
 				echo "</tbody>";
 				echo "</table>";				
+			}
+			else if($selOption == "home win percentage"){
+				$query = "SELECT A.T_name, A.HomeWins / B.HomeGames AS HomeWinPercentage FROM (
+						(SELECT T_name, COUNT(*) AS HomeWins FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);
+				$query .= ") AND home = 1 AND result = 1 
+						GROUP BY team_id) AS A INNER JOIN
+						(SELECT T_name, COUNT(*) AS HomeGames FROM `teamgame` NATURAL JOIN `team` WHERE team_id = T_id AND L_id = $selLeague AND (";
+				$query .= (isset($season5)) ? "season_id = $season5 OR ": '';
+				$query .= (isset($season4)) ? "season_id = $season4 OR ": '';
+				$query .= (isset($season3)) ? "season_id = $season3 OR ": '';
+				$query .= (isset($season2)) ? "season_id = $season2 OR ": '';
+				$query .= (isset($season1)) ? "season_id = $season1 OR ": '';
+				$query = substr($query, 0, strlen($query) - 3);		
+				$query .=") AND home = 1 GROUP BY team_id) AS B ON A.`T_name` = B.`T_name`) ORDER BY HomeWinPercentage " . $sort . ";";
+				
+				$result = mysqli_query($con, $query);
+				if(!$result){
+					echo "query did not work";
+				}
+				echo "<table class=\"table table-striped\">";
+				echo "<thead><th>Team Name</th><th>Home Win Percentage</th></thead>";
+				echo "<tbody>";
+				while($row = mysqli_fetch_assoc($result)){
+					echo "<tr>";
+					echo "<td>" . $row['T_name'] . "</td><td>" . $row['HomeWinPercentage'] . "</td>";
+					echo "</tr>";
+				}
+				echo "</tbody>";
+				echo "</table>";
+								
 			}
 			?>
 		</div>
